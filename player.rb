@@ -7,7 +7,7 @@ class Player
   end
 
   def hand=(card)
-    @hand << card
+    hand << card
   end
 
   def hand_clear
@@ -15,6 +15,6 @@ class Player
   end
 
   def cards_in_hand
-    @hand.size
+    hand.size
   end
 end

@@ -3,13 +3,13 @@ class Game
 
   def initialize
     @scoresheet = blackjack_scoresheet
+    @staff_names = %w[John Mike Kate Cindy]
   end
 
-  def start_game
+  def call
     sign_in
-    print "Enter number of decks: "
-    @deck = Deck.new(gets.chomp.to_i)
-    @dealer = Dealer.new('Dealer')
+    prepare_deck
+    assign_dealer
     start_round
   end
 
@@ -18,18 +18,31 @@ class Game
     @player = Player.new(gets.chomp)
   end
 
+  def prepare_deck
+    print "Enter number of decks: "
+    input = gets.chomp.to_i
+    input = 1 unless (1..8).include?(input)
+
+    @deck = Deck.new(input)
+  end
+
+  def assign_dealer
+    @dealer = Dealer.new("Dealer #{staff_names.sample}")
+  end
+
   def deal_card
-    @deck.deal_card
+    deck.deal_card
   end
 
   def hand_score(player)
-    score = player.hand.reduce(0) { |sum, card| sum + @scoresheet[card] }
+    score = player.hand.reduce(0) { |sum, card| sum + scoresheet[card] }
     player.hand.select { |c| c.include?('A') }.each { score -= 10 if score > 21 }
     score
   end
 
   private
 
+  attr_reader :player, :dealer, :deck, :scoresheet, :staff_names
   attr_accessor :information
 
   def blackjack_scoresheet
@@ -49,32 +62,42 @@ class Game
   end
 
   def start_round
-    return unless @deck.cards_in_deck > 5
+    return unless deck.cards_in_deck > 5
 
     self.information = "Round Started"
-    @player.hand_clear
-    @dealer.hand_clear
-    puts show_table
-    call
+    player.hand_clear
+    dealer.hand_clear
+    2.times do
+      initial_deal
+      puts show_table
+    end
+    stand if rand(2).zero?
+    menu
+  end
+
+  def initial_deal
+    puts "Dealing cards..."
+    sleep(2)
+    dealer.deal(player, self)
+    dealer.move(self)
   end
 
   def show_table
-    "#{@deck.cards_in_deck} cards in deck | #{information}\n" +
-      "#{@player.name}, (#{hand_score(@player)})\n" +
-      "| #{@player.hand.join(' | ')} |\n" +
-      "#{@dealer.name}\n" +
-      "| #{@dealer.hand.map { '*' }.join(' | ')} |"
+    "#{deck.cards_in_deck} cards in deck | #{information}\n" +
+      "#{player.name}, (#{hand_score(player)})\n" +
+      "| #{player.hand.join(' | ')} |\n" +
+      "#{dealer.name}\n" +
+      "| #{dealer.hand.map { '*' }.join(' | ')} |"
   end
 
   def interface
-    puts "Your action:"
     %w[
-      Stand
-      Hit
-      Open\ cards
-    ].each.with_index(1) do |opt, index|
-      puts "#{index}. #{opt}"
-    end
+      ===============
+      1\ Stand
+      2\ Hit
+      3\ Open\ cards
+      Exit
+    ].each { |opt| puts opt }
   end
 
   def process_input(input)
@@ -83,6 +106,7 @@ class Game
       stand
     when 2
       hit
+      stand
     when 3
       stop_round
     else
@@ -90,9 +114,10 @@ class Game
     end
   end
 
-  def call
+  def menu
     loop do
       interface
+      print "Your action: "
       input = gets.chomp.strip
       break if input.downcase == 'exit'
 
@@ -102,13 +127,14 @@ class Game
   end
 
   def stand
-    @dealer.move(self)
-    self.information = "Stand, Dealer's move"
+    sleep(1)
+    dealer.move(self)
+    self.information = "Dealer's move"
     puts show_table
   end
 
   def hit
-    @dealer.deal(@player, self)
+    dealer.deal(player, self)
     self.information = "Hit"
     puts show_table
   end
@@ -128,17 +154,17 @@ class Game
   end
 
   def show_score
-    "#{@player.name}, (#{hand_score(@player)}), | #{@player.hand.join(' | ')} |\n" +
-      "#{@dealer.name}, (#{hand_score(@dealer)}), | #{@dealer.hand.join(' | ')} |"
+    "#{player.name}, (#{hand_score(player)}), | #{player.hand.join(' | ')} |\n" +
+      "#{dealer.name}, (#{hand_score(dealer)}), | #{dealer.hand.join(' | ')} |"
   end
 
   def winner
-    if hand_score(@player) < 22 && (hand_score(@player) > hand_score(@dealer) || hand_score(@dealer) > 21)
-      'You win'
-    elsif hand_score(@player) == hand_score(@dealer)
+    if hand_score(player) < 22 && (hand_score(player) > hand_score(dealer) || hand_score(dealer) > 21)
+      "#{player.name} win!"
+    elsif hand_score(player) == hand_score(dealer)
       'Draw'
     else
-      'Dealer win'
+      "#{dealer.name} win!"
     end
   end
 end

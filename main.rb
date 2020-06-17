@@ -4,4 +4,4 @@ require_relative 'player'
 require_relative 'dealer'
 require_relative 'game'
 
-Game.new.start_game
+Game.new.call
