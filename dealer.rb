@@ -1,11 +1,11 @@
+require_relative 'player'
+
 class Dealer < Player
-  def move(game)
-    deal(self, game) if game.hand_score(self) < 17
-  end
+  attr_reader :name
 
-  def deal(player, game)
-    return unless player.cards_in_hand < 3 && game.hand_score(player) < 21
+  private
 
-    player.hand = game.deal_card
+  def post_initialize(_opts)
+    @name = 'Dealer'
   end
 end

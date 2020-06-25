@@ -1,20 +1,24 @@
 class Player
-  attr_reader :name, :hand
+  attr_reader :cards, :scoresheet
 
-  def initialize(name)
-    @name = name
-    hand_clear
+  def initialize(**opts)
+    @scoresheet = opts[:scoresheet] || {}
+    @cards = []
+    post_initialize(opts)
   end
 
-  def hand=(card)
-    hand << card
+  def score
+    score = cards.inject(0) { |sum, card| sum + scoresheet[card] }
+    cards.select { |c| c.include?('A') }.each { score -= 10 if score > 21 }
+    score
   end
 
-  def hand_clear
-    @hand = []
+  def deal(card)
+    cards << card
   end
 
-  def cards_in_hand
-    hand.size
-  end
+  protected
+
+  # subclasses may override
+  def post_initialize(opts); end
 end
