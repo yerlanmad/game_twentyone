@@ -1,11 +1,12 @@
+# frozen_string_literal: true
+
 require_relative 'player'
 
 class Dealer < Player
   attr_reader :name
 
-  private
-
-  def post_initialize(_opts)
+  def initialize
     @name = 'Dealer'
+    super
   end
 end

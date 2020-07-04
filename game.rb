@@ -1,45 +1,44 @@
+# frozen_string_literal: true
+
 class Game
   def call
     @deck = Deck.new
-    @scoresheet = deck.scoresheet
-    @dealer = Dealer.new(scoresheet: scoresheet)
+    @dealer = Dealer.new
     sign_in
     start
   end
 
   private
 
-  attr_reader :user, :dealer, :deck, :scoresheet
+  attr_reader :user, :dealer, :deck
   attr_accessor :message
 
   def sign_in
     print 'Enter your name: '
     name = gets.chomp
-    @user = User.new(name: name.strip, scoresheet: scoresheet)
+    @user = User.new(name.strip)
   end
 
   def start
-    self.message = "Game Started"
+    self.message = 'Game Started'
     2.times do
       initial_deal
     end
     puts table
-    pass if rand(2).zero?
-    menu
+    random_move
   end
 
   def initial_deal
-    puts "Dealing cards..."
-    sleep(2)
+    puts 'Dealing cards...'
     user.deal(deck.deal_card)
     dealer.deal(deck.deal_card)
   end
 
   def table
-    "#{deck.deck.size} cards in deck | #{message}\n" +
-      "#{user.name}, (#{user.score})\n" +
-      "| #{user.cards.join(' | ')} |\n" +
-      "#{dealer.name}\n" +
+    "#{deck.deck.size} cards in deck | #{message}\n" \
+      "#{user.name}, (#{user.score})\n" \
+      "| #{user.cards.join(' | ')} |\n" \
+      "#{dealer.name}\n" \
       "| #{dealer.cards.map { '*' }.join(' | ')} |"
   end
 
@@ -56,10 +55,10 @@ class Game
   def process_input(input)
     case input.to_i
     when 1
-      pass
+      dealer_move
     when 2
-      hit
-      pass
+      user_move
+      dealer_move
     when 3
       stop
     end
@@ -68,7 +67,7 @@ class Game
   def menu
     loop do
       interface
-      print "Your action: "
+      print 'Your action: '
       input = gets.chomp.strip
       break if input.downcase == 'exit'
 
@@ -77,23 +76,27 @@ class Game
     end
   end
 
-  def pass
-    sleep(1)
+  def dealer_move
     dealer.deal(deck.deal_card) if dealer.cards.size < 3 && dealer.score < 17
 
     self.message = "Dealer's move"
     puts table
   end
 
-  def hit
+  def user_move
     user.deal(deck.deal_card) if user.cards.size < 3 && user.score < 21
 
-    self.message = "Hit"
+    self.message = 'Hit'
     puts table
   end
 
+  def random_move
+    dealer_move if rand(2).zero?
+    menu
+  end
+
   def stop
-    self.message = "Game ended"
+    self.message = 'Game ended'
     puts table
     puts result_table
     puts winner
@@ -102,7 +105,7 @@ class Game
   end
 
   def result_table
-    "#{user.name}, (#{user.score}), | #{user.cards.join(' | ')} |\n" +
+    "#{user.name}, (#{user.score}), | #{user.cards.join(' | ')} |\n" \
       "#{dealer.name}, (#{dealer.score}), | #{dealer.cards.join(' | ')} |"
   end
 

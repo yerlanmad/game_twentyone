@@ -1,5 +1,5 @@
 AllCops:
-  DisplayCopNames: true
+ DisplayCopNames: true
 
 Style/HashEachMethods:
   Enabled: true
@@ -7,15 +7,6 @@ Style/HashTransformKeys:
   Enabled: true
 Style/HashTransformValues:
   Enabled: true
-Metrics/LineLength:
-  Max: 100
-Style/LineEndConcatenation:
-  Enabled: false
-Style/AsciiComments:
-  Enabled: false
-Style/StringLiterals:
-  Enabled: false
+
 Style/Documentation:
-  Enabled: false
-Style/FrozenStringLiteralComment:
   Enabled: false
